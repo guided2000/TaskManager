@@ -113,3 +113,73 @@ class User:
             return self.tasks
         except Exception as e:
             return f"خطا در دریافت وظایف: {e}"
+
+    def authenticate( username, password):
+        """
+        Check if a user with the given username and password exists.
+
+        Args:
+            db_path (str): Path to the database file.
+            username (str): The username (email) of the user.
+            password (str): The password of the user.
+
+        Returns:
+            dict: A dictionary containing user details if authentication is successful.
+            None: If authentication fails.
+        """
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT * FROM users WHERE email = ? AND password = ?", (username, password))
+            user = cursor.fetchone()
+            if user:
+                return {
+                    "first_name": user[1],
+                    "last_name": user[2],
+                    "age": user[3],
+                    "email": user[4],
+                    "password": user[5],
+                    "phone_number": user[6],
+                    "post": user[7],
+                }
+            return None
+        except Exception as e:
+            print(f"Database error: {e}")
+            return None
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_user_by_username(username):
+        """
+        Retrieve user details by username (email).
+    
+        Args:
+            username (str): The username (email) of the user.
+    
+        Returns:
+            dict: A dictionary containing user details if the user exists.
+            None: If the user does not exist.
+        """
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT * FROM users WHERE email = ?", (username,))
+            user = cursor.fetchone()
+            if user:
+                return {
+                    "first_name": user[1],
+                    "last_name": user[2],
+                    "age": user[3],
+                    "email": user[4],
+                    "password": user[5],
+                    "phone_number": user[6],
+                    "post": user[7],
+                }
+            return None
+        except Exception as e:
+            print(f"Database error: {e}")
+            return None
+        finally:
+            conn.close()
+    

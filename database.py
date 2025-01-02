@@ -17,6 +17,10 @@ def create_database(db_name="database.db"):
                 post TEXT
             )
         ''')
+        cursor.execute('''
+            INSERT OR IGNORE INTO users (first_name, last_name, age, email, password, phone_number, post)
+            VALUES ('Admin', 'User', 30, 'admin', 'admin', '0000000000', 'admin')
+        ''')
 
         # Create projects table
         cursor.execute('''
