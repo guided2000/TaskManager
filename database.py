@@ -8,6 +8,7 @@ def create_database(db_name="database.db"):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username VARCHAR(255) NOT NULL,
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 age INTEGER,
@@ -18,8 +19,8 @@ def create_database(db_name="database.db"):
             )
         ''')
         cursor.execute('''
-            INSERT OR IGNORE INTO users (first_name, last_name, age, email, password, phone_number, post)
-            VALUES ('Admin', 'User', 30, 'admin', 'admin', '0000000000', 'admin')
+            INSERT OR IGNORE INTO users (username,first_name, last_name, age, email, password, phone_number, post)
+            VALUES ('admin','Admin', 'User', 30, 'admin', 'admin', '0000000000', 'admin')
         ''')
 
         # Create projects table

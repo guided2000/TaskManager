@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkcalendar import Calendar
 from database import *  # Your database file
 from projects import Project
 from tasks import Task
@@ -48,88 +49,6 @@ class TaskManagerApp:
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-    def show_projects(self):
-        self.clear_main_frame()
-
-        tk.Label(self.main_frame, text="Project List", font=("Arial", 16)).pack(pady=10)
-
-        # Projects table
-        project_table = ttk.Treeview(self.main_frame, columns=("Name", "Deadline", "Status"), show="headings")
-        project_table.heading("Name", text="Project Name")
-        project_table.heading("Deadline", text="Deadline")
-        project_table.heading("Status", text="Status")
-        project_table.pack(fill="both", expand=True)
-
-        # Retrieve and display projects from the database
-        projects = Project.get_all_projects()
-        for project in projects:
-            project_table.insert("", "end", values=(project["name"], project["deadline"], project["status"]))
-
-        # Add project button
-        tk.Button(self.main_frame, text="Add Project", command=self.add_project).pack(pady=10)
-
-    def add_project(self):
-        self.clear_main_frame()
-    
-        # عنوان صفحه
-        tk.Label(self.main_frame, text="Add Project", font=("Arial", 16)).pack(pady=10)
-    
-        # متغیرهای ذخیره داده‌های ورودی
-        name_var = tk.StringVar()
-        description_var = tk.StringVar()
-        start_date_var = tk.StringVar()
-        end_date_var = tk.StringVar()
-        undertaking_var = tk.StringVar()
-    
-        # ایجاد فرم ورودی‌ها
-        tk.Label(self.main_frame, text="Name:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=name_var, width=30).pack(padx=20)
-    
-        tk.Label(self.main_frame, text="Description:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=description_var, width=30).pack(padx=20)
-    
-        tk.Label(self.main_frame, text="Start Date:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=start_date_var, width=30).pack(padx=20)
-    
-        tk.Label(self.main_frame, text="End Date:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=end_date_var, width=30).pack(padx=20)
-    
-        tk.Label(self.main_frame, text="Undertaking:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=undertaking_var, width=30).pack(padx=20)
-    
-        # تابع ذخیره‌سازی اطلاعات
-        def save_project():
-            name = name_var.get()
-            description = description_var.get()
-            start_date = start_date_var.get()
-            end_date = end_date_var.get()
-            undertaking = undertaking_var.get()
-    
-            # بررسی خالی نبودن فیلدها
-            if not name or not description or not start_date or not end_date or not undertaking:
-                tk.messagebox.showerror("Error", "Please fill in all fields!")
-                return
-    
-            # نمایش پیام موفقیت (می‌توانید ذخیره در دیتابیس را اینجا اضافه کنید)
-            tk.messagebox.showinfo("Success", f"Project '{name}' added successfully!")
-    
-            # پاک کردن ورودی‌ها
-            name_var.set("")
-            description_var.set("")
-            start_date_var.set("")
-            end_date_var.set("")
-            undertaking_var.set("")
-    
-        # دکمه اضافه کردن
-        tk.Button(
-            self.main_frame,
-            text="Add",
-            command=save_project,
-            bg="green",
-            fg="white",
-            font=("Arial", 12),
-        ).pack(pady=20)
-
     def show_login_screen(self):
         self.clear_main_frame()
 
@@ -149,12 +68,128 @@ class TaskManagerApp:
             password = password_entry.get()
             user = User.authenticate(username, password)
             if user:
+                self.logged_in_user = username
                 messagebox.showinfo("Success", "Login successful!")
                 self.show_tasks()
             else:
                 messagebox.showerror("Error", "Invalid username or password.")
 
         tk.Button(login_frame, text="Login", command=login).pack(pady=10)
+
+
+    def show_projects(self):
+        self.clear_main_frame()
+
+        tk.Label(self.main_frame, text="Project List", font=("Arial", 16)).pack(pady=10)
+
+        # Projects table
+        project_table = ttk.Treeview(self.main_frame, columns=("Name", "Start date", "End date"), show="headings")
+        project_table.heading("Name", text="Project Name")
+        project_table.heading("Start date", text="Start date")
+        project_table.heading("End date", text="End date")
+        project_table.pack(fill="both", expand=True)
+
+        # Retrieve and display projects from the database
+        projects = Project.get_all_projects(self.logged_in_user)
+        for project in projects:
+            project_table.insert("", "end", values=(project["name"], project["start_date"], project["end_date"]))
+
+
+        # Add project button
+        tk.Button(self.main_frame, text="Add Project", command=self.add_project).pack(pady=10)
+
+    def add_project(self):
+        self.clear_main_frame()
+    
+        # عنوان صفحه
+        tk.Label(self.main_frame, text="Add Project", font=("Arial", 16)).pack(pady=10)
+    
+        # متغیرهای ذخیره داده‌های ورودی
+        name_var = tk.StringVar()
+        description_var = tk.StringVar()
+        start_date_var = tk.StringVar()
+        end_date_var = tk.StringVar()
+        undertaking_var = self.logged_in_user
+    
+        # ایجاد فرم ورودی‌ها
+        tk.Label(self.main_frame, text="Name:").pack(anchor="w", padx=20, pady=5)
+        tk.Entry(self.main_frame, textvariable=name_var, width=30).pack(padx=20)
+    
+        tk.Label(self.main_frame, text="Description:").pack(anchor="w", padx=20, pady=5)
+        tk.Entry(self.main_frame, textvariable=description_var, width=30).pack(padx=20)
+    
+        tk.Label(self.main_frame, text="Start Date:").pack(anchor="w", padx=20, pady=5)
+    
+        # دکمه انتخاب تاریخ شروع
+        def select_start_date():
+            calendar_window = tk.Toplevel(self.window)
+            calendar_window.title("Select Start Date")
+            calendar = Calendar(calendar_window, date_pattern="yyyy-mm-dd")
+            calendar.pack(pady=10)
+    
+            def confirm_date():
+                start_date_var.set(calendar.get_date())
+                calendar_window.destroy()
+    
+            tk.Button(calendar_window, text="OK", command=confirm_date).pack()
+    
+        tk.Entry(self.main_frame, textvariable=start_date_var, width=30).pack(padx=20)
+        tk.Button(self.main_frame, text="Select Start Date", command=select_start_date).pack(pady=5)
+    
+        tk.Label(self.main_frame, text="End Date:").pack(anchor="w", padx=20, pady=5)
+    
+        # دکمه انتخاب تاریخ پایان
+        def select_end_date():
+            calendar_window = tk.Toplevel(self.window)
+            calendar_window.title("Select End Date")
+            calendar = Calendar(calendar_window, date_pattern="yyyy-mm-dd")
+            calendar.pack(pady=10)
+    
+            def confirm_date():
+                end_date_var.set(calendar.get_date())
+                calendar_window.destroy()
+    
+            tk.Button(calendar_window, text="OK", command=confirm_date).pack()
+    
+        tk.Entry(self.main_frame, textvariable=end_date_var, width=30).pack(padx=20)
+        tk.Button(self.main_frame, text="Select End Date", command=select_end_date).pack(pady=5)
+    
+        tk.Label(self.main_frame, text="Undertaking:").pack(anchor="w", padx=20, pady=5)
+        tk.Label(self.main_frame, text=self.logged_in_user).pack(padx=20)
+    
+        # تابع ذخیره‌سازی اطلاعات
+        def save_project():
+            name = name_var.get()
+            description = description_var.get()
+            start_date = start_date_var.get()
+            end_date = end_date_var.get()
+            undertaking = self.logged_in_user
+    
+            # بررسی خالی نبودن فیلدها
+            if not name or not description or not start_date or not end_date or not undertaking:
+                tk.messagebox.showerror("Error", "Please fill in all fields!")
+                return
+    
+            # نمایش پیام موفقیت
+            project = Project(name, description, start_date, end_date, undertaking)
+            project.save()
+            tk.messagebox.showinfo("Success", f"Project '{name}' added successfully!")
+    
+            # پاک کردن ورودی‌ها
+            name_var.set("")
+            description_var.set("")
+            start_date_var.set("")
+            end_date_var.set("")
+    
+        # دکمه اضافه کردن
+        tk.Button(
+            self.main_frame,
+            text="Add",
+            command=save_project,
+            bg="green",
+            fg="white",
+            font=("Arial", 12),
+        ).pack(pady=20)
 
     def refresh_task_list(self, query=None):
         """
@@ -208,7 +243,7 @@ class TaskManagerApp:
         self.refresh_task_list()
 
         # Attach right-click menu
-        self.task_table.bind("<Button-3>", self.show_context_menu)
+        self.task_table.bind("<Button-3>")
     def add_task(self):
         self.clear_main_frame()
 
@@ -298,9 +333,10 @@ class TaskManagerApp:
         profile_frame = tk.Frame(self.main_frame, padx=10, pady=10)
         profile_frame.pack(fill="both", expand=True)
 
-        user = User.get_user_by_username("admin")
+        user = User.get_user_by_username(self.logged_in_user)
         if user:
             profile_info = f"""
+            Username:{user['username']}
             Name: {user['first_name']} {user['last_name']}
             Email: {user['email']}
             Phone: {user['phone_number']}

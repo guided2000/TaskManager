@@ -1,7 +1,8 @@
 from database import *
 
 class User:
-    def __init__(self, first_name, last_name, age, email, password, phone_number, post):
+    def __init__(self,username, first_name, last_name, age, email, password, phone_number, post):
+        self.username = username
         self.first_name = first_name
         self.last_name = last_name
         self.age = age
@@ -20,7 +21,7 @@ class User:
             str: A success or error message.
         """
         try:
-            add_user_to_db("database.db", self.first_name, self.last_name, self.age, self.email, self.password, self.phone_number, self.post)
+            add_user_to_db("database.db",self.username, self.first_name, self.last_name, self.age, self.email, self.password, self.phone_number, self.post)
             return "کاربر با موفقیت اضافه شد."
         except Exception as e:
             return f"خطا در اضافه کردن کاربر: {e}"
@@ -120,7 +121,7 @@ class User:
 
         Args:
             db_path (str): Path to the database file.
-            username (str): The username (email) of the user.
+            username (str): The username of the user.
             password (str): The password of the user.
 
         Returns:
@@ -152,10 +153,10 @@ class User:
     @staticmethod
     def get_user_by_username(username):
         """
-        Retrieve user details by username (email).
+        Retrieve user details by username (username).
     
         Args:
-            username (str): The username (email) of the user.
+            username (str): The username (username) of the user.
     
         Returns:
             dict: A dictionary containing user details if the user exists.
@@ -164,17 +165,19 @@ class User:
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT * FROM users WHERE email = ?", (username,))
+            cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
             user = cursor.fetchone()
             if user:
                 return {
-                    "first_name": user[1],
-                    "last_name": user[2],
-                    "age": user[3],
-                    "email": user[4],
-                    "password": user[5],
-                    "phone_number": user[6],
-                    "post": user[7],
+                    "id":user[0],
+                    "username": user[1],
+                    "first_name": user[2],
+                    "last_name": user[3],
+                    "age": user[4],
+                    "email": user[5],
+                    "password": user[6],
+                    "phone_number": user[7],
+                    "post": user[8],
                 }
             return None
         except Exception as e:
