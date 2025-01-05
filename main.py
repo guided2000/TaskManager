@@ -44,11 +44,9 @@ class TaskManagerApp:
         menu_bar.add_cascade(label="Tasks", menu=task_menu)
 
         self.window.config(menu=menu_bar)
-
     def clear_main_frame(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-
     def show_login_screen(self):
         self.clear_main_frame()
 
@@ -75,8 +73,6 @@ class TaskManagerApp:
                 messagebox.showerror("Error", "Invalid username or password.")
 
         tk.Button(login_frame, text="Login", command=login).pack(pady=10)
-
-
     def show_projects(self):
         self.clear_main_frame()
 
@@ -97,7 +93,6 @@ class TaskManagerApp:
 
         # Add project button
         tk.Button(self.main_frame, text="Add Project", command=self.add_project).pack(pady=10)
-
     def add_project(self):
         self.clear_main_frame()
     
@@ -190,7 +185,6 @@ class TaskManagerApp:
             fg="white",
             font=("Arial", 12),
         ).pack(pady=20)
-
     def refresh_task_list(self, query=None):
         """
         Refresh the task list in the table, including the project name for each task.
@@ -224,7 +218,6 @@ class TaskManagerApp:
             conn.close()
         except Exception as e:
             tk.messagebox.showerror("Error", f"Failed to load tasks: {e}")
-
     def show_tasks(self):
         """
         Display the task list with an additional column for project names.
@@ -240,6 +233,9 @@ class TaskManagerApp:
             self.task_table.heading(col, text=col)
         self.task_table.pack(fill="both", expand=True)
 
+        tasks=Task.get_all_task(self.logged_in_user)
+        
+            
         self.refresh_task_list()
 
         # Attach right-click menu
@@ -271,16 +267,37 @@ class TaskManagerApp:
         tk.Entry(self.main_frame, textvariable=due_date_var, width=30).pack(padx=20)
 
         tk.Label(self.main_frame, text="Priority:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=priority_var, width=30).pack(padx=20)
+        # لیست آیتم‌ها
+        items = ["Very high","High","Medium","Low","Very low","No priority"]
+
+        # ایجاد لیست کشویی
+        priority_combobox = ttk.Combobox(self.main_frame, values=items,width=28, state="readonly")
+        priority_combobox.set("Choose")  # مقدار پیش‌فرض
+        priority_combobox.pack(padx=20)
 
         tk.Label(self.main_frame, text="Status:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=status_var, width=30).pack(padx=20)
+        # لیست آیتم‌ها
+        items = ['Pending','In Progress','Completed']
 
-        tk.Label(self.main_frame, text="Project ID:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=project_id_var, width=30).pack(padx=20)
+        # ایجاد لیست کشویی
+        status_combobox = ttk.Combobox(self.main_frame, values=items,width=28, state="readonly")
+        status_combobox.set("Choose")  # مقدار پیش‌فرض
+        status_combobox.pack(padx=20)
 
+        tk.Label(self.main_frame, text="Project:").pack(anchor="w", padx=20, pady=5)
+        projects=Project.get_all_projects(self.logged_in_user)
+        items = []
+        for project in projects:
+            item=project["id"]
+            item=str(item)+'_'+project["name"]
+            items.append(item)
+
+        # ایجاد لیست کشویی
+        project_combobox= ttk.Combobox(self.main_frame, values=items,width=28, state="readonly")
+        project_combobox.set("Choose")  # مقدار پیش‌فرض
+        project_combobox.pack(padx=20)
         tk.Label(self.main_frame, text="Undertaking:").pack(anchor="w", padx=20, pady=5)
-        tk.Entry(self.main_frame, textvariable=undertaking_var, width=30).pack(padx=20)
+        tk.Label(self.main_frame, text=self.logged_in_user).pack(padx=20)
 
         tk.Label(self.main_frame, text="Progress:").pack(anchor="w", padx=20, pady=5)
         tk.Entry(self.main_frame, textvariable=progress_var, width=30).pack(padx=20)
@@ -290,22 +307,30 @@ class TaskManagerApp:
             title = title_var.get()
             description = description_var.get()
             due_date = due_date_var.get()
-            priority = priority_var.get()
-            status = status_var.get()
-            project_id = project_id_var.get()
-            undertaking = undertaking_var.get()
+            priority = priority_combobox.get()
+            status = status_combobox.get()
+            project_id = project_combobox.get()
+            undertaking = self.logged_in_user
             progress = progress_var.get()
 
             # بررسی خالی نبودن فیلدها
             if not title or not description or not due_date or not priority or not status or not project_id or not undertaking or not progress:
                 messagebox.showerror("Error", "Please fill in all fields!")
                 return
-
+            project_id=int(project_id.split('_')[0])
             # نمایش پیام موفقیت (می‌توانید ذخیره در دیتابیس را اینجا اضافه کنید)
+            new_task=Task(title, description, due_date, priority, status, project_id, undertaking, progress)
+            new_task.save()
             messagebox.showinfo("Success", f"Task '{title}' added successfully!")
-
-            # بستن پنجره وظیفه
-            self.main_frame.destroy()
+            #پاک کردن مقادیر فرم
+            title_var.set("")
+            description_var.set("")
+            due_date_var.set("")
+            priority_combobox.set("Choose")
+            status_combobox.set("choose")
+            project_combobox.set("choose")
+            progress_var.set("")
+            
 
         # دکمه اضافه کردن
         tk.Button(
@@ -316,17 +341,13 @@ class TaskManagerApp:
             fg="white",
             font=("Arial", 12),
         ).pack(pady=20)
-
-
     def edit_task(self, task_id):
         messagebox.showinfo("Info", "Edit task functionality not implemented yet.")
-
     def delete_task(self, task_id):
         confirm = messagebox.askyesno("Delete Task", "Are you sure you want to delete this task?")
         if confirm:
             Task.delete(task_id)
             self.refresh_task_list()
-
     def show_profile(self):
         self.clear_main_frame()
 
@@ -347,7 +368,6 @@ class TaskManagerApp:
             profile_info = "No user found!"
 
         tk.Label(profile_frame, text=profile_info, justify="left", font=("Arial", 12)).pack(anchor="w")
-
     def logout(self):
         confirm = messagebox.askyesno("Logout", "Are you sure you want to logout?")
         if confirm:

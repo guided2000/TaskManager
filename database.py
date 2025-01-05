@@ -141,13 +141,13 @@ def update_task(db_name, task_id, new_data):
         ''', values)
         conn.commit()
 
-def get_task(db_name, task_id):
+def get_task(db_name, undertaking):
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT * FROM tasks WHERE id = ?
-        ''', (task_id,))
-        return cursor.fetchone()
+            SELECT * FROM tasks WHERE undertaking = ?
+        ''', (undertaking,))
+        return cursor.fetchall()
 
 def get_tasks_by_project(db_name, project_id):
     with sqlite3.connect(db_name) as conn:

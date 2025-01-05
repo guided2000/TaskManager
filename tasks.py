@@ -47,7 +47,7 @@ class Task:
             str: A success or error message.
         """
         try:
-            add_task("database.db", self.title, self.description, self.due_date, self.priority, self.status, self.project_id, self.undertaking, self.progress)
+            add_task("database.db", self.title, self.description, self.due_date, self.priority, self.status, self.progress, self.project_id, self.undertaking)
             return "وظیفه با موفقیت ذخیره شد."
         except Exception as e:
             return f"خطا در ذخیره وظیفه: {e}"
@@ -85,20 +85,36 @@ class Task:
         except Exception as e:
             return f"خطا در به‌روزرسانی وظیفه: {e}"
 
-    def get_task_by_id(self, task_id):
+    def get_all_task(undertaking):
         """
-        Retrieve a task by its ID.
+        Retrieve a task by its undertaking.
 
         Args:
-            task_id (int): The ID of the task to retrieve.
+            task_id (str): The undertaking of the task to retrieve.
 
         Returns:
             dict: The task details or an error message.
         """
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
         try:
-            task = get_task("database.db", task_id)
-            if task:
-                return task
+            cursor.execute("SELECT * FROM projects WHERE undertaking = ?", (undertaking,))
+            tasks = cursor.fetchall()
+            task_list=[
+                {
+                   "title":task[1], 
+                   "description":task[2], 
+                   "due_date":task[3], 
+                   "priority":task[4], 
+                   "status":task[5],
+                   "progress":task[6],
+                   "project_id":task[7], 
+                   "undertaking":task[8]
+                }
+                for task in tasks
+            ]
+            if task_list:
+                return task_list
             return "وظیفه‌ای با این شناسه یافت نشد."
         except Exception as e:
             return f"خطا در دریافت وظیفه: {e}"

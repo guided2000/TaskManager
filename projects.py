@@ -83,6 +83,7 @@ class Project:
             projects = cursor.fetchall()
             project_list = [
                 {
+                    "id":project[0],
                     "name": project[1],
                     "description": project[2],
                     "start_date": project[3],
